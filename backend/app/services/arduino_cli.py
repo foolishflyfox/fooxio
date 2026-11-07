@@ -346,21 +346,25 @@ class ArduinoCLIService:
                 existing.update(urls)
 
             wanted = set(self._all_core_urls().values())
+            added_urls = set()
             for url in wanted:
                 if url not in existing:
                     print(f"[arduino-cli] Adding board manager URL: {url}")
-                    subprocess.run(
+                    add_result = subprocess.run(
                         [self.cli_path, "config", "add", "board_manager.additional_urls", url],
                         capture_output=True, text=True
                     )
+                    if add_result.returncode == 0:
+                        added_urls.add(url)
 
-            # Refresh index so new cores are discoverable
-            print("[arduino-cli] Updating core index...")
-            subprocess.run(
-                [self.cli_path, "core", "update-index"],
-                capture_output=True, text=True
-            )
-            self._registered_urls = existing | wanted
+            # 只有新增索引地址时才刷新；已有内核不需要每次启动都访问网络。
+            if added_urls:
+                print("[arduino-cli] Updating core index...")
+                subprocess.run(
+                    [self.cli_path, "core", "update-index"],
+                    capture_output=True, text=True
+                )
+            self._registered_urls = existing | added_urls
         except Exception as e:
             print(f"Warning: Could not configure board URLs: {e}")
 
