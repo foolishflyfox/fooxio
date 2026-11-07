@@ -24,12 +24,19 @@ _fooxio_repo_root=$(cd "$(dirname "$_script_path")/.." && pwd -P) || return 1
 unset _script_path
 
 _fooxio_setup_env() {
-  # root 取函数的第一个参数（项目根目录）；其余局部变量在后续步骤中赋值。
-  local root="$1" os installer nvm_dir node_major npm_major uv_bin
-  local python_env="$1/backend/.venv" requirements="$1/backend/requirements.txt"
+  local os node_major npm_major uv_bin
   local manifest checksum marker install_dir
-
+  # 用于保存下载 nvm 或 uv 安装脚本时使用的临时文件路径。
+  local installer
+  # 用于确定 nvm 的安装目录，随后赋给环境变量 NVM_DIR。
+  local nvm_dir
+  # 获取操作系统名称
   os=$(uname -s) || return 1
+  # 后端 Python 虚拟环境的目录。
+  local python_env="$_fooxio_repo_root/backend/.venv"
+  # 后端 Python 依赖清单的路径。
+  local requirements="$_fooxio_repo_root/backend/requirements.txt"
+
   case "$os" in
     Darwin|Linux) ;;
     *) printf '暂不支持 %s；当前仅支持 macOS 和 Linux。\n' "$os" >&2; return 1 ;;
@@ -92,11 +99,13 @@ _fooxio_setup_env() {
     nvm install 20 || return 1
   fi
   nvm use 20 || return 1
+  # 获取 node 的主版本号
   node_major=$(node -p 'process.versions.node.split(".")[0]') || return 1
   if [ "$node_major" != 20 ]; then
     printf '预期 Node.js 20，实际为 %s。\n' "$(node --version)" >&2
     return 1
   fi
+  # 获取 npm 的主版本号
   npm_major=$(npm --version 2>/dev/null) || return 1
   # %% 是最长匹配后缀删除：从第一个点起去掉版本后缀，只留下主版本号。
   npm_major=${npm_major%%.*}
@@ -111,6 +120,7 @@ _fooxio_setup_env() {
     return 1
   fi
 
+  # uv 是 Python 包管理工具，用于创建虚拟环境和安装后端依赖。
   if ! command -v uv >/dev/null 2>&1; then
     printf '安装 uv...\n'
     if [ "$os" = Darwin ] && command -v brew >/dev/null 2>&1; then
@@ -148,6 +158,7 @@ _fooxio_setup_env() {
       fi
     fi
   fi
+  # 获取 uv 可执行文件的路径
   uv_bin=$(command -v uv 2>/dev/null) || {
     printf 'uv 安装后仍不在 PATH 中；请检查安装器输出。\n' >&2
     return 1
@@ -167,16 +178,16 @@ _fooxio_setup_env() {
   fi
 
   checksum=$(cksum < "$requirements") || return 1
-  marker="$python_env/.velxio-requirements.cksum"
+  marker="$python_env/.fooxio-requirements.cksum"
   if [ ! -f "$marker" ] || [ "$(cat "$marker")" != "$checksum" ]; then
     printf '安装后端 Python 依赖...\n'
     "$uv_bin" pip install --python "$python_env/bin/python" -r "$requirements" || return 1
     printf '%s\n' "$checksum" > "$marker" || return 1
   fi
 
-  for install_dir in "$root" "$root/frontend"; do
+  for install_dir in "$_fooxio_repo_root" "$_fooxio_repo_root/frontend"; do
     manifest="$install_dir/package.json"
-    marker="$install_dir/node_modules/.velxio-package.cksum"
+    marker="$install_dir/node_modules/.fooxio-package.cksum"
     checksum=$(cksum < "$manifest") || return 1
     if [ ! -d "$install_dir/node_modules" ] || [ ! -f "$marker" ] || [ "$(cat "$marker")" != "$checksum" ]; then
       printf '安装 %s 的 npm 依赖...\n' "$install_dir"
@@ -194,7 +205,7 @@ _fooxio_setup_env() {
     "$(node --version)" "$(npm --version)" "$(python --version 2>&1)"
 }
 
-if _fooxio_setup_env "$_fooxio_repo_root"; then
+if _fooxio_setup_env; then
   _fooxio_status=0
 else
   _fooxio_status=1
