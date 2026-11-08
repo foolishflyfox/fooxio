@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    """OSS settings — stateless deployment.
+    """OSS settings — file-backed anonymous projects, no auth or database.
 
     Auth, DB, OAuth, billing, mail relay etc. moved to the velxio-prod
     private overlay during the Phase 1-4 OSS/pro split. The overlay

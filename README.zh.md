@@ -250,7 +250,7 @@ docker run -d \
 
 五个命名卷保存以下数据：
 
-- `velxio-data` → `/app/data`：SQLite 数据库、项目程序文件和自动生成的 `SECRET_KEY`。
+- `velxio-data` → `/app/data`：`projects/` 下保存的项目及其他持久化数据。
 - `velxio-arduino-libs` → `/root/.arduino15`：arduino-cli 配置和已安装的内核，避免每次重启容器后重新安装并等待 5–10 分钟。
 - `velxio-arduino-user-libs` → `/root/Arduino`：通过 Library Manager 安装的 Arduino 库，例如 Adafruit_BMP280、DHT 和 GFX。没有这个卷，重启容器后的下一次编译会重新下载这些库。
 - `velxio-ccache` → `/var/cache/ccache`：用于 ESP-IDF 编译的 C/C++ 对象文件缓存。首次编译时为空，随后逐步填充；后续编译可命中缓存，将耗时从几分钟缩短到几秒。
@@ -273,6 +273,8 @@ docker compose up -d --build
 然后打开 <http://localhost:3080>。容器首次启动时会生成随机的 `SECRET_KEY` 并将其持久化在 `./data/` 中，因此**无需 `.env` 文件**即可运行。
 
 #### 可选：自定义环境配置
+
+开源镜像将项目保存为 `/app/data/projects/` 下的文件；同一自托管实例的所有访客均可查看和编辑这些项目，无需登录。首次按 Ctrl+S（macOS 上为 Cmd+S）时，输入项目名即可保存；之后按相同快捷键会直接更新该项目。可通过编辑器中的“打开项目”浏览已保存的项目，或导入本地 `.vlx` / Wokwi `.zip` 文件。
 
 开源镜像几乎无需配置：不依赖外部数据库，不包含身份验证或第三方集成。只有想修改本地开发时的 CORS 来源，才需要创建 `backend/.env`。
 

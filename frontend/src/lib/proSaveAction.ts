@@ -7,11 +7,8 @@
  * in the pro overlay. The OSS editor exposes a stable `triggerSaveAction()`
  * that:
  *
- *   - In OSS without an overlay → downloads a portable `.vlx` snapshot
- *     of the current workspace. The user picks where it goes (browser
- *     save dialog) and can re-load it later via the "Open .vlx" button.
- *     This is Phase 4 of the OSS split — gives self-hosters durable
- *     project persistence without requiring a DB or auth.
+ *   - In the OSS browser build → saves projects to the self-hosted API.
+ *   - In the desktop build → downloads a portable `.vlx` snapshot.
  *   - With the pro overlay loaded → installSaveActionImpl() overrides
  *     the default. The overlay's impl inspects the auth store and opens
  *     SaveProjectModal (logged in) or LoginPromptModal (anonymous).
@@ -23,6 +20,7 @@
 
 import { triggerDownloadVlx } from '../utils/vlxFile';
 import { useProjectStore } from '../store/useProjectStore';
+import { requestServerSave } from '../features/serverProjects/actions';
 
 let _impl: (() => void) | null = null;
 
@@ -31,7 +29,11 @@ export function installSaveActionImpl(impl: (() => void) | null): void {
 }
 
 function defaultSaveAction(): void {
-  // OSS fallback: dump the workspace to a `.vlx` file the user downloads.
+  if (!import.meta.env.VITE_PRO_BUILD && !import.meta.env.VITE_DESKTOP) {
+    requestServerSave();
+    return;
+  }
+  // Desktop and Pro fallback: download a portable `.vlx` snapshot.
   // Use the loaded project's name if there is one (slug/identity tracking
   // doesn't require auth — useProjectStore stays in OSS).
   const proj = useProjectStore.getState().currentProject;
@@ -51,10 +53,7 @@ export function triggerSaveAction(): void {
   }
 }
 
-/** Whether a custom (overlay) implementation has been installed. The OSS
- * default always works, so callers don't usually need this. Kept as a
- * hook for UIs that want to label the button differently in OSS vs Pro
- * (e.g. "Download .vlx" vs "Save project"). */
+/** Whether a custom (overlay) implementation has been installed. */
 export function hasSaveActionImpl(): boolean {
   return _impl !== null;
 }

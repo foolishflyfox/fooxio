@@ -14,6 +14,7 @@ import { importProjectFile, PROJECT_FILE_ACCEPT } from '../../utils/importProjec
 import { retargetBoardWires } from '../../utils/wokwiZip';
 import { showMessageDialog, showConfirmDialog } from '../../store/useMessageDialogStore';
 import { registerEditorCommand } from '../../lib/editorCommands';
+import { openServerProjects } from '../../features/serverProjects/actions';
 import './FileExplorer.css';
 
 /** Neutral chip glyph for overlay-registered boards without a bespoke icon. */
@@ -469,7 +470,15 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({ onSaveClick, onNewCl
   // the change event still fires when the user picks the same file twice.
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const handleOpenProjectClick = useCallback(() => {
-    fileInputRef.current?.click();
+    // 开源版网页打开服务器上的项目列表；其他构建仍使用本地文件选择器。
+    if (!import.meta.env.VITE_PRO_BUILD && !import.meta.env.VITE_DESKTOP) openServerProjects();
+    else fileInputRef.current?.click();
+  }, []);
+  // 项目列表弹窗通过此事件复用文件栏中的本地文件选择器。
+  useEffect(() => {
+    const onOpenLocal = () => fileInputRef.current?.click();
+    window.addEventListener('velxio-open-local-project', onOpenLocal);
+    return () => window.removeEventListener('velxio-open-local-project', onOpenLocal);
   }, []);
   const handleProjectFilePicked = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -939,7 +948,9 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({ onSaveClick, onNewCl
           </button>
           <button
             className="file-explorer-save-btn"
-            title="Open project (.vlx Velxio or .zip Wokwi)"
+            title={!import.meta.env.VITE_PRO_BUILD && !import.meta.env.VITE_DESKTOP
+              ? t('editor.serverProjects.title', 'Saved projects')
+              : 'Open project (.vlx Velxio or .zip Wokwi)'}
             onClick={handleOpenProjectClick}
           >
             <IcoOpen />

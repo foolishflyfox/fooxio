@@ -124,6 +124,15 @@
         "failedStatus": "保存失败 ({{status}})。"
       }
     },
+    "serverProjects": {
+      "title": "已保存的项目",
+      "saved": "项目保存成功",
+      "open": "打开",
+      "openLocal": "打开本地 .vlx 或 .zip 文件…",
+      "empty": "还没有保存的项目。",
+      "loading": "正在加载项目…",
+      "confirmOpen": "打开这个项目？未保存的更改将丢失。"
+    },
     "share": {
       "title": "分享项目",
       "public": "公开",

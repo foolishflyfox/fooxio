@@ -11,6 +11,8 @@ import { restoreStashedWorkspace } from '../utils/workspaceDraft';
 import { CodeEditor } from '../components/editor/CodeEditor';
 import { EditorToolbar } from '../components/editor/EditorToolbar';
 import { FileExplorer } from '../components/editor/FileExplorer';
+import { ServerProjectHost } from '../features/serverProjects/ServerProjectHost';
+import { useServerProjectState } from '../features/serverProjects/state';
 
 // Lazy-load Pi workspace so xterm.js isn't in the main bundle
 import { CompilationConsole } from '../components/editor/CompilationConsole';
@@ -147,7 +149,8 @@ export const EditorPage: React.FC = () => {
     // adds the slash); client-side navigation lands on /editor. Both count.
     if (window.location.pathname.replace(/\/+$/, '') !== localizedPath('/editor', locale)) return;
     if (window.location.search) return;
-    if (useProjectStore.getState().currentProject) return;
+    // 原项目系统或服务器项目中只要已有打开的项目，就不要清空工作区或显示新建项目引导。
+    if (useProjectStore.getState().currentProject || useServerProjectState.getState().active) return;
     const sim = useSimulatorStore.getState();
     const pristine =
       sim.boards.length === 1 &&
@@ -649,13 +652,13 @@ export const EditorPage: React.FC = () => {
           }}
         >
           {/* File explorer sidebar + resize handle */}
-          {explorerOpen && (
+          {(
             <>
               <div
                 style={{
                   width: explorerWidth,
                   flexShrink: 0,
-                  display: 'flex',
+                  display: explorerOpen ? 'flex' : 'none',
                   flexDirection: 'column',
                   overflow: 'hidden',
                 }}
@@ -663,11 +666,11 @@ export const EditorPage: React.FC = () => {
                 <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
                   <FileExplorer onSaveClick={handleSaveClick} onNewClick={handleNewClick} autoSave={autoSave} />
                 </div>
-                {accountBlock && (
+                {explorerOpen && accountBlock && (
                   <div className="explorer-account-footer">{accountBlock}</div>
                 )}
               </div>
-              {!isMobile && (
+              {explorerOpen && !isMobile && (
                 <div
                   className="explorer-resize-handle"
                   onMouseDown={handleExplorerResizeMouseDown}
@@ -829,6 +832,7 @@ export const EditorPage: React.FC = () => {
         />
       )}
       <NewsAnnouncer />
+      <ServerProjectHost />
       <NewProjectDialog
         isOpen={showNewProjectDialog}
         onClose={() => setShowNewProjectDialog(false)}

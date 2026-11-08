@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { ProjectVisibility } from '../services/projectService';
+import { clearServerProject } from '../features/serverProjects/state';
 
 interface CurrentProject {
   id: string;
@@ -32,11 +33,17 @@ export const useProjectStore = create<ProjectState>((set) => ({
   currentProject: null,
   currentExampleId: null,
   // Loading a real project supersedes the example context.
-  setCurrentProject: (project) => set({ currentProject: project, currentExampleId: null }),
+  setCurrentProject: (project) => {
+    clearServerProject();
+    set({ currentProject: project, currentExampleId: null });
+  },
   // Also drops the example context: every caller (new project, blank
   // workspace, logout cleanup) means "this workspace is no longer that".
   // loadExample re-stamps its id right after calling this.
-  clearCurrentProject: () => set({ currentProject: null, currentExampleId: null }),
+  clearCurrentProject: () => {
+    clearServerProject();
+    set({ currentProject: null, currentExampleId: null });
+  },
   setCurrentExampleId: (id) => set({ currentExampleId: id }),
   setVisibility: (next) =>
     set((s) => {

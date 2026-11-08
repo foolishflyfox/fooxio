@@ -109,11 +109,9 @@ app.include_router(intellisense.router, prefix="/api/intellisense", tags=["intel
 # get it too.
 app.include_router(flash.router, prefix="/api/flash", tags=["flash"])
 
-# Auth / projects / admin / metrics routers used to be wired up here, gated
-# on the auth/DB stack being importable. Phase 2 of the OSS split moved
-# them out of upstream entirely — they now live under the private overlay's
-# pro/backend/app/api/routes/ and are registered by register_pro(app)
-# below. The OSS image carries none of them: anonymous, stateless.
+# Anonymous file-backed projects use a separate namespace from the Pro API.
+from app.project_storage.routes import router as oss_projects_router
+app.include_router(oss_projects_router, prefix="/api/oss/projects", tags=["oss-projects"])
 
 # WebSockets
 from app.api.routes import simulation

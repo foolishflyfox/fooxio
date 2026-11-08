@@ -1,0 +1,18 @@
+.server-project-backdrop { position: fixed; inset: 0; z-index: 9600; display: grid; place-items: center; background: var(--color-bg-overlay); }
+.server-project-dialog { width: min(520px, calc(100vw - 32px)); max-height: min(650px, calc(100vh - 48px)); overflow: auto; padding: 24px; border: 1px solid var(--wb-7); border-radius: 12px; background: var(--wb-4); color: var(--wb-13); box-shadow: var(--shadow-4); }
+.server-project-dialog header, .server-project-dialog footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.server-project-dialog header { margin-bottom: 22px; }
+.server-project-dialog h2 { margin: 0; font-size: 22px; }
+.server-project-dialog label { display: block; margin-bottom: 8px; }
+.server-project-dialog input { box-sizing: border-box; width: 100%; padding: 12px; border: 1px solid var(--wb-8); border-radius: 6px; background: var(--wb-3); color: var(--wb-13); font: inherit; }
+.server-project-dialog button { padding: 9px 16px; border: 1px solid var(--wb-8); border-radius: 6px; background: var(--wb-5); color: var(--wb-13); cursor: pointer; font: inherit; }
+.server-project-dialog button:disabled { opacity: .55; cursor: default; }
+.server-project-dialog footer { justify-content: flex-end; margin-top: 22px; }
+.server-project-dialog footer button:last-child { background: var(--color-accent-fg); color: white; border-color: transparent; }
+.server-project-error { color: var(--color-feedback-error); }
+.server-project-list { list-style: none; padding: 0; margin: 0; }
+.server-project-list li + li { border-top: 1px solid var(--wb-7); }
+.server-project-list button { display: flex; width: 100%; justify-content: space-between; gap: 12px; border: 0; border-radius: 0; text-align: left; }
+.server-project-list small { color: var(--wb-10); }
+.server-project-notice { position: fixed; right: 20px; bottom: 20px; z-index: 9701; padding: 10px 16px; border-radius: 6px; background: var(--color-feedback-success-soft); color: var(--color-feedback-success); box-shadow: var(--shadow-3); }
+.server-project-notice.is-error { background: var(--color-feedback-error-soft); color: var(--color-feedback-error); }

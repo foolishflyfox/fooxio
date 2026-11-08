@@ -126,6 +126,15 @@
         "failedStatus": "Save failed ({{status}})."
       }
     },
+    "serverProjects": {
+      "title": "Saved projects",
+      "saved": "Project saved",
+      "open": "Open",
+      "openLocal": "Open local .vlx or .zip…",
+      "empty": "No saved projects yet.",
+      "loading": "Loading projects…",
+      "confirmOpen": "Open this project? Unsaved changes will be lost."
+    },
     "share": {
       "title": "Share project",
       "public": "Public",
