@@ -113,6 +113,7 @@ _fooxio_setup_env() {
   npm_major=$(npm --version 2>/dev/null) || return 1
   # %% 是最长匹配后缀删除：从第一个点起去掉版本后缀，只留下主版本号。
   npm_major=${npm_major%%.*}
+  # 由 npm@10.9.7 直接升级到 npm@11 会报错，需要先升级到 npm@10.9.8 ，再升级到 npm@11
   if [ "$npm_major" != 11 ]; then
     printf '安装 npm 11...\n'
     npm install -g npm@11 || return 1
