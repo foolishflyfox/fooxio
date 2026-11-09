@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 在 Bash 或 Zsh 中使用 source foo-scripts/setup-env.sh 加载本脚本。
-# 使用 source 时，首行 shebang 仅作为注释；当前终端会保留 Node 20 和 backend/.venv 环境。
+# 使用 source 时，首行 shebang 仅作为注释；当前终端会保留 Node 22 和 backend/.venv 环境。
 
 if [ -n "${BASH_VERSION:-}" ]; then # Bash 会设置 BASH_VERSION；非空说明当前是 Bash 在读取本脚本。
   if [ "${BASH_SOURCE[0]}" = "$0" ]; then
@@ -24,7 +24,7 @@ _fooxio_repo_root=$(cd "$(dirname "$_script_path")/.." && pwd -P) || return 1
 unset _script_path
 
 _fooxio_setup_env() {
-  local os node_major npm_major uv_bin
+  local os npm_major uv_bin
   local manifest checksum marker install_dir
   # 用于保存下载 nvm 或 uv 安装脚本时使用的临时文件路径。
   local installer
@@ -94,15 +94,19 @@ _fooxio_setup_env() {
     return 1
   fi
 
-  if [ "$(nvm version 20 2>/dev/null)" = 'N/A' ]; then
-    printf '安装 Node.js 20...\n'
-    nvm install 20 || return 1
+  if [ "$(nvm version 22 2>/dev/null)" = 'N/A' ]; then
+    printf '安装 Node.js 22...\n'
+    nvm install 22 || return 1
   fi
-  nvm use 20 || return 1
-  # 获取 node 的主版本号
-  node_major=$(node -p 'process.versions.node.split(".")[0]') || return 1
-  if [ "$node_major" != 20 ]; then
-    printf '预期 Node.js 20，实际为 %s。\n' "$(node --version)" >&2
+  nvm use 22 || return 1
+  # Vite 7 要求 Node.js 22.12.0 或更新版本；旧版 22.x 需升级。
+  if ! node -e 'const [major, minor] = process.versions.node.split(".").map(Number); process.exit(major === 22 && minor >= 12 ? 0 : 1)'; then
+    printf '升级 Node.js 22 至 22.12.0 或更新版本...\n'
+    nvm install 22 || return 1
+    nvm use 22 || return 1
+  fi
+  if ! node -e 'const [major, minor] = process.versions.node.split(".").map(Number); process.exit(major === 22 && minor >= 12 ? 0 : 1)'; then
+    printf '预期 Node.js 22.12.0 或更新版本，实际为 %s。\n' "$(node --version)" >&2
     return 1
   fi
   # 获取 npm 的主版本号

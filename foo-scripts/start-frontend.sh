@@ -4,7 +4,7 @@
 
 _fooxio_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P) || exit 1
 
-# setup-env.sh 必须用 source 加载，使 Node.js 20 和 npm 11 在本进程中生效。
+# setup-env.sh 必须用 source 加载，使 Node.js 22 和 npm 11 在本进程中生效。
 if ! source "$_fooxio_root/foo-scripts/setup-env.sh"; then
   printf '环境准备失败，请检查上方输出。\n' >&2
   exit 1
